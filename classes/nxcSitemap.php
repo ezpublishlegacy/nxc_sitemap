@@ -59,7 +59,7 @@ class nxcSitemap {
                 $object->resetDataMap();                
             }
             if ($this->cli) $this->cli->output('.', false);
-        } while ($offset < 300);
+        } while (count($nodes));
         
         $result .= "</urlset>";
         
