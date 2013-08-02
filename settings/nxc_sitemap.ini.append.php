@@ -12,5 +12,10 @@ ClassFilterType=include
 ClassFilterArray[]
 ClassFilterArray[]=folder
 
+[NodeSettings]
+#AdditionalUrlParams[node.url_alias]=/(view_parameter)/value
+AdditionalUrlParams[]
+
+
 */
 ?>

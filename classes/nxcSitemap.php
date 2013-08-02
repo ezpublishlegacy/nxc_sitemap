@@ -15,6 +15,7 @@ class nxcSitemap {
     private $outputType = 'file';
     private $sitemapXml;
     private $cli = false;
+    private $additionalUrlParams;
 
 
     public function __construct( $outputType, $cli = false ) {
@@ -25,6 +26,7 @@ class nxcSitemap {
         $this->priorities = ($ini->hasVariable('GeneralSettings', 'NodeDepthPriority')) ? $ini->variable('GeneralSettings', 'NodeDepthPriority') : self::getDepthPriority();
         $this->outputType = ($outputType == 'file') ? 'file' : 'module';
         $this->cli = $cli;
+        $this->additionalUrlParams = ($ini->hasVariable('NodeSettings', 'AdditionalUrlParams')) ? $ini->variableArray('NodeSettings', 'AdditionalUrlParams') : false;
     }
     
     private function generateSitemap() {
@@ -52,11 +54,12 @@ class nxcSitemap {
             foreach( $nodes as $key => $node ) {
                 //$tpl->resetVariables();
                 $tpl->setVariable('priority', $this->priorities);
+                $tpl->setVariable('additional_url_parameters', $this->additionalUrlParams);
                 $tpl->setVariable( 'node', $node );
                 $result .= $tpl->fetch( 'design:node/view/nxc_sitemap.tpl' );
                 $object = $node->attribute( 'object' );
                 eZContentObject::clearCache( $object->attribute( 'id' ) );
-                $object->resetDataMap();                
+                $object->resetDataMap();
             }
             if ($this->cli) $this->cli->output('.', false);
         } while (count($nodes));
@@ -82,6 +85,7 @@ class nxcSitemap {
     private static function getDepthPriority() {
         return array( '1', '0.9', '0.8', '0.7', '0.6', '0.5', '0.4');
     }
+    
     
 }
 
