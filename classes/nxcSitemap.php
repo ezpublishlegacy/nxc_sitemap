@@ -6,12 +6,12 @@
  * @date    2 Aug 2013
  **/
 
-class nxcSitemap {        
-    
+class nxcSitemap {
+
     private $classFilterList = array();
     private $classFilterType = 1;
     private $mainNodeOnly = false;
-    private $priorities = array();    
+    private $priorities = array();
     private $outputType = 'file';
     private $sitemapXml;
     private $cli = false;
@@ -19,7 +19,7 @@ class nxcSitemap {
 
 
     public function __construct( $outputType, $cli = false ) {
-        $ini = eZIni::instance( 'nxc_sitemap.ini' );        
+        $ini = eZIni::instance( 'nxc_sitemap.ini' );
         $this->classFilterType = ($ini->hasVariable('Classes', 'ClassFilterType') && $ini->variable('Classes', 'ClassFilterType') == 'exclude') ? 'exclude' : 'include';
         $this->classFilterList = ($ini->hasVariable('Classes', 'ClassFilterArray')) ? $ini->variable('Classes', 'ClassFilterArray') : array();
         $this->mainNodeOnly = ($ini->hasVariable('GeneralSettings', 'MainNodeOnly') && $ini->variable('GeneralSettings', 'MainNodeOnly') == 'true' ) ? true : false;
@@ -28,7 +28,7 @@ class nxcSitemap {
         $this->cli = $cli;
         $this->additionalUrlParams = ($ini->hasVariable('NodeSettings', 'AdditionalUrlParams')) ? $ini->variableArray('NodeSettings', 'AdditionalUrlParams') : false;
     }
-    
+
     private function generateSitemap() {
         $tpl = eZTemplate::factory();
         $limit = 100;
@@ -48,8 +48,8 @@ class nxcSitemap {
                     'ClassFilterArray'=> $this->classFilterList,
                     'Main_Node_Only'  => $this->mainNodeOnly
                 ),
-            2 );
-            
+            1 );
+
             $offset += $limit;
             foreach( $nodes as $key => $node ) {
                 //$tpl->resetVariables();
@@ -63,12 +63,12 @@ class nxcSitemap {
             }
             if ($this->cli) $this->cli->output('.', false);
         } while (count($nodes));
-        
+
         $result .= "</urlset>";
-        
+
         $this->sitemapXml = $result;
     }
-    
+
     public function output() {
         $this->generateSitemap();
         if ($this->outputType == 'file') {
@@ -78,15 +78,15 @@ class nxcSitemap {
             header("Content-Type: text/xml");
             echo $this->sitemapXml;
             eZExecution::cleanExit();
-        }        
+        }
     }
-        
-    
+
+
     private static function getDepthPriority() {
         return array( '1', '0.9', '0.8', '0.7', '0.6', '0.5', '0.4');
     }
-    
-    
+
+
 }
 
 ?>
