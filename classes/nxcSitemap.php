@@ -6,20 +6,21 @@
  * @date    2 Aug 2013
  **/
 
-class nxcSitemap {        
-    
+class nxcSitemap {
+
     private $classFilterList = array();
     private $classFilterType = 1;
     private $mainNodeOnly = false;
-    private $priorities = array();    
+    private $priorities = array();
     private $outputType = 'file';
     private $sitemapXml;
     private $cli = false;
     private $additionalUrlParams;
+    private $objectState = false;
 
 
     public function __construct( $outputType, $cli = false ) {
-        $ini = eZIni::instance( 'nxc_sitemap.ini' );        
+        $ini = eZIni::instance( 'nxc_sitemap.ini' );
         $this->classFilterType = ($ini->hasVariable('Classes', 'ClassFilterType') && $ini->variable('Classes', 'ClassFilterType') == 'exclude') ? 'exclude' : 'include';
         $this->classFilterList = ($ini->hasVariable('Classes', 'ClassFilterArray')) ? $ini->variable('Classes', 'ClassFilterArray') : array();
         $this->mainNodeOnly = ($ini->hasVariable('GeneralSettings', 'MainNodeOnly') && $ini->variable('GeneralSettings', 'MainNodeOnly') == 'true' ) ? true : false;
@@ -27,29 +28,32 @@ class nxcSitemap {
         $this->outputType = ($outputType == 'file') ? 'file' : 'module';
         $this->cli = $cli;
         $this->additionalUrlParams = ($ini->hasVariable('NodeSettings', 'AdditionalUrlParams')) ? $ini->variableArray('NodeSettings', 'AdditionalUrlParams') : false;
+        $this->objectState = ( $ini->hasVariable('GeneralSettings', 'UseObjectStates') && $ini->variable('GeneralSettings', 'UseObjectStates') == 'true' && $ini->hasVariable('GeneralSettings', 'LiveObjectState') && (int)$ini->variable('GeneralSettings', 'LiveObjectState') > 0 ) ? (int)$ini->variable('GeneralSettings', 'LiveObjectState') : false;
     }
-    
+
     private function generateSitemap() {
         $tpl = eZTemplate::factory();
         $limit = 100;
         $offset = 0;
         $counter = 0;
-        // would be great to change string to real XML dom document; need more time :(
-        $result = "<?xml version='1.0' encoding='UTF-8'?><urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd'>";
-        do {
-            $nodes = array();
-            $nodes = eZContentObjectTreeNode::subTreeByNodeID(
-                array(
+        $fetchParams = array(
                     'Depth'           => 0,
                     'Limit'           => $limit,
-                    'Offset'          => $offset,
                     'LoadDataMap'     => false,
                     'ClassFilterType' => $this->classFilterType,
                     'ClassFilterArray'=> $this->classFilterList,
                     'Main_Node_Only'  => $this->mainNodeOnly
-                ),
-            2 );
-            
+        );
+        if ($this->objectState) {
+            $fetchParams['AttributeFilter'][] = array( 'state', '=', $this->objectState  );
+        }
+        // would be great to change string to real XML dom document; need more time :(
+        $result = "<?xml version='1.0' encoding='UTF-8'?><urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd'>";
+        do {
+            $nodes = array();
+            $fetchParams['Offset'] = $offset;
+            $nodes = eZContentObjectTreeNode::subTreeByNodeID( $fetchParams, 2 );
+
             $offset += $limit;
             foreach( $nodes as $key => $node ) {
                 //$tpl->resetVariables();
@@ -63,12 +67,12 @@ class nxcSitemap {
             }
             if ($this->cli) $this->cli->output('.', false);
         } while (count($nodes));
-        
+
         $result .= "</urlset>";
-        
+
         $this->sitemapXml = $result;
     }
-    
+
     public function output() {
         $this->generateSitemap();
         if ($this->outputType == 'file') {
@@ -78,15 +82,15 @@ class nxcSitemap {
             header("Content-Type: text/xml");
             echo $this->sitemapXml;
             eZExecution::cleanExit();
-        }        
+        }
     }
-        
-    
+
+
     private static function getDepthPriority() {
         return array( '1', '0.9', '0.8', '0.7', '0.6', '0.5', '0.4');
     }
-    
-    
+
+
 }
 
 ?>

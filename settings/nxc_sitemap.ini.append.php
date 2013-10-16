@@ -2,6 +2,9 @@
 
 [GeneralSettings]
 MainNodeOnly=true
+UseObjectStates=false
+LiveObjectState=0
+
 
 #Node_Depth_Priority[]
 
