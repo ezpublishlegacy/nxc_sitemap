@@ -52,8 +52,7 @@ class nxcSitemap {
         do {
             $nodes = array();
             $fetchParams['Offset'] = $offset;
-            $nodes = eZContentObjectTreeNode::subTreeByNodeID( $fetchParams, 2 );
-
+            $nodes = eZContentObjectTreeNode::subTreeByNodeID( $fetchParams, 1 );
             $offset += $limit;
             foreach( $nodes as $key => $node ) {
                 //$tpl->resetVariables();
