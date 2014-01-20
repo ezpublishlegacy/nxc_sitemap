@@ -29,6 +29,7 @@ class nxcSitemap {
         $this->cli = $cli;
         $this->additionalUrlParams = ($ini->hasVariable('NodeSettings', 'AdditionalUrlParams')) ? $ini->variableArray('NodeSettings', 'AdditionalUrlParams') : false;
         $this->objectState = ( $ini->hasVariable('GeneralSettings', 'UseObjectStates') && $ini->variable('GeneralSettings', 'UseObjectStates') == 'true' && $ini->hasVariable('GeneralSettings', 'LiveObjectState') && (int)$ini->variable('GeneralSettings', 'LiveObjectState') > 0 ) ? (int)$ini->variable('GeneralSettings', 'LiveObjectState') : false;
+        $this->AttributeFilter = ($ini->hasVariable('AttributeFilter', 'AttributeFilter')) ? $ini->variable('AttributeFilter', 'AttributeFilter') : false;
     }
 
     private function generateSitemap() {
@@ -44,6 +45,11 @@ class nxcSitemap {
                     'ClassFilterArray'=> $this->classFilterList,
                     'Main_Node_Only'  => $this->mainNodeOnly
         );
+
+        if ($this->AttributeFilter) {
+            $fetchParams['AttributeFilter'][] = $this->AttributeFilter;
+        }
+
         if ($this->objectState) {
             $fetchParams['AttributeFilter'][] = array( 'state', '=', $this->objectState  );
         }
