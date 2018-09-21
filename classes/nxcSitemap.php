@@ -17,6 +17,7 @@ class nxcSitemap {
     private $cli = false;
     private $additionalUrlParams;
     private $objectState = false;
+    private $onlyTranslated = false;
 
 
     public function __construct( $outputType, $cli = false ) {
@@ -30,6 +31,7 @@ class nxcSitemap {
         $this->additionalUrlParams = ($ini->hasVariable('NodeSettings', 'AdditionalUrlParams')) ? $ini->variableArray('NodeSettings', 'AdditionalUrlParams') : false;
         $this->objectState = ( $ini->hasVariable('GeneralSettings', 'UseObjectStates') && $ini->variable('GeneralSettings', 'UseObjectStates') == 'true' && $ini->hasVariable('GeneralSettings', 'LiveObjectState') && (int)$ini->variable('GeneralSettings', 'LiveObjectState') > 0 ) ? (int)$ini->variable('GeneralSettings', 'LiveObjectState') : false;
         $this->AttributeFilter = ($ini->hasVariable('AttributeFilter', 'AttributeFilter')) ? $ini->variable('AttributeFilter', 'AttributeFilter') : false;
+        $this->onlyTranslated = ($ini->hasVariable('GeneralSettings', 'OnlyTranslated')) ? $ini->variable('GeneralSettings', 'OnlyTranslated') : false;
     }
 
     private function generateSitemap() {
@@ -45,6 +47,11 @@ class nxcSitemap {
                     'ClassFilterArray'=> $this->classFilterList,
                     'Main_Node_Only'  => $this->mainNodeOnly
         );
+
+        if ($this->onlyTranslated) {
+            $locale = eZLocale::instance();
+            $fetchParams['Language'] = $locale->TranslationCode;
+        }
 
         if ($this->AttributeFilter) {
             $fetchParams['AttributeFilter'][] = $this->AttributeFilter;
